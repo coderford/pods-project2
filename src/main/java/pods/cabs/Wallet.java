@@ -69,11 +69,11 @@ public static final class ResponseBalance
 
      private Behavior<Command> onDeductBalance(DeductBalance message)
      {
-         if(this.balance-message.deductvalue <0)
+         if(this.balance-message.toDeduct <0)
          {
              return -1;
          }
-         this.balance-=message.deductvalue;
+         this.balance-=message.toDeduct;
          message.replyTo.tell(new ResponseBalance(this.balance));
          return this;
      }
@@ -114,11 +114,11 @@ public static final class GetBalance implements Command{
 public static final class DeductBalance implements Command
 {
    final ActorRef<Wallet.ResponseBalance> replyTo;
-    final int deductvalue;
+    final int toDeduct;
     public void DeductBalance(int toDeduct, ActorRef<Wallet.ResponseBalance> replyTo)
     {
 
-        this.deductvalue=toDeduct;
+        this.toDeduct=toDeduct;
         this.replyTo=replyTo;
     }
 }
