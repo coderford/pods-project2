@@ -50,6 +50,16 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
         }
     }
 
+    public static final class RideEndedByCab implements Command {
+        final String cabId;
+        final int rideId;
+
+        public RideEndedByCab(String cabId, int rideId) {
+            this.cabId = cabId;
+            this.rideId = rideId;
+        }
+    }
+
     public static final class RequestRideResponse implements Command {
         final boolean accepted;
 
@@ -117,6 +127,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
         builder.onMessage(FulfillRideRequest.class, this::onFulfillRideRequest);
         builder.onMessage(RequestRideResponse.class, this::onRequestRideResponse);
         builder.onMessage(WrappedResponseBalance.class, this::onWrappedResponseBalance);
+        builder.onMessage(RideEndedByCab.class, this::onRideEndedByCab);
 
         return builder.build();
     }
@@ -236,6 +247,11 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
         ));
 
         this.curState = FFState.WAIT_FOR_RIDE_END;
+        return this;
+    }
+
+    private Behavior<Command> onRideEndedByCab(RideEndedByCab message) {
+
         return this;
     }
 

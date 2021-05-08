@@ -16,6 +16,8 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     private int sourceLoc;
     private int destinationLoc;
 
+    private ActorRef<FulfillRide.Command> fulfillActor;
+
     public interface Command {}
 
     public interface Response {}
@@ -67,7 +69,11 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     }
 
     public static final class SignIn implements Command {
+        final int initialPos;
 
+        public SignIn(int initialPos) {
+            this.initialPos = initialPos;
+        }
     }
 
     public static final class SignOut implements Command {
@@ -156,7 +162,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
             message.replyTo.tell(new FulfillRide.RequestRideResponse(false));
 
         if(state == CabState.AVAILABLE) {
-
+            this.fulfillActor = message.replyTo;
             this.rideId = message.rideId;
             this.state = CabState.COMMITTED;
             this.sourceLoc = message.sourceLoc;
@@ -196,19 +202,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
     private Behavior<Command> onRideEnded(RideEnded message) {
         if(this.state != CabState.GIVING_RIDE || this.rideId != message.rideId)
-            return false;
-
-        String rideEndedURL = "http://ride-service:8081/rideEnded";
-        String response = RequestSender.getHTTPResponse(
-            rideEndedURL, 
-            Arrays.asList("cabId", "rideId"), 
-            Arrays.asList(
-                String.format("%d", this.id),
-                String.format("%d", this.rideId)
-            )
-        );
-
-        if(!response.equals("true")) return false;
+            return this;
 
         this.state = CabState.AVAILABLE;
         this.rideId = -1;
@@ -216,19 +210,29 @@ public class Cab extends AbstractBehavior<Cab.Command> {
         this.sourceLoc = -1;
         this.destinationLoc = -1;
 
-        return true;
+        this.fulfillActor.tell(new FulfillRide.RideEndedByCab(
+            this.id,
+            this.rideId
+        ));
         return this;
     }
 
     private Behavior<Command> onSignIn(SignIn message) {
-        boolean signInAllowed = (state == CabState.SIGNED_OUT && initialPos >= 0);
+        boolean signInAllowed = (state == CabState.SIGNED_OUT && message.initialPos >= 0);
 
-        if(signInAllowed && sendSignInRequest(id, initialPos)) {
+        if(signInAllowed) {
+            // update variables
             state = CabState.AVAILABLE;
-            location = initialPos;
-            return true;
+            location = message.initialPos;
+
+            // send sign-in message to a random ride service instance
+            int randomIndex = (int) (Math.random() * Globals.rideServices.size());
+            Globals.rideServices.get(randomIndex).tell(new RideService.CabSignsIn(
+                this.id,
+                message.initialPos
+            ));
         }
-        return false;
+
         return this;
     }
 
@@ -238,15 +242,20 @@ public class Cab extends AbstractBehavior<Cab.Command> {
                                   state != CabState.GIVING_RIDE &&
                                   state != CabState.COMMITTED);
 
-        if(signOutAllowed && sendSignOutRequest(id)) {
+        if(signOutAllowed) {
+            // update variables
             state = CabState.SIGNED_OUT;
             location = 0;
             interested = true;
             numRides = 0;
-            return true;
+
+            // send sign-out message to a random ride service instance
+            int randomIndex = (int) (Math.random() * Globals.rideServices.size());
+            Globals.rideServices.get(randomIndex).tell(new RideService.CabSignsOut(
+                this.id
+            ));
         }
 
-        return false;
         return this;
     }
 
@@ -257,32 +266,5 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
     private Behavior<Command> onReset(Reset message) {
         return this;
-    }
-
-    private boolean sendSignInRequest(String id, int initialPos) {
-        String signInURL = "http://ride-service:8081/cabSignsIn";
-        String response = RequestSender.getHTTPResponse(
-            signInURL, 
-            Arrays.asList("cabId", "initialPos"),
-            Arrays.asList(
-                String.format("%d", this.id),
-                String.format("%d", initialPos)
-            ) 
-        );
-
-        if(!response.equals("true")) return false;
-        return true;
-    }
-
-    private boolean sendSignOutRequest(String id) {
-        String signOutURL = "http://ride-service:8081/cabSignsOut";
-        String response = RequestSender.getHTTPResponse(
-            signOutURL, 
-            Arrays.asList("cabId"),
-            Arrays.asList(String.format("%d", this.id)) 
-        );
-
-        if(!response.equals("true")) return false;
-        return true;
     }
 }

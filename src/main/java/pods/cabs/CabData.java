@@ -7,6 +7,7 @@ public class CabData {
 
     public boolean interested;
     public int rideId;
+    public int custId;
     public int location;
     public int sourceLoc;
     public int destinationLoc;
