@@ -1,8 +1,13 @@
 package pods.cabs;
 
-public class Ride extends AbstractBehavior<Ride.Command>
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.*;
+import java.util.HashMap;
+
+public class RideService extends AbstractBehavior<Ride.Command>
 {
-    private int cabId;
+  /*  private String cabId;
    private int numRides;
     private String state;
 
@@ -11,6 +16,10 @@ public class Ride extends AbstractBehavior<Ride.Command>
     private int sourceLoc;
     private int destinationLoc;
     private int custId = 0;
+*/
+    /*CabData HashMap
+    */
+    private HashMap<String , CabData> CabDataMap;
 
 
     public interface Command{}
@@ -21,37 +30,45 @@ public class Ride extends AbstractBehavior<Ride.Command>
      */
 
      public static final class CabSignsIn implements Command{
+         final String cabID;
+         final  int initialPos;
          public CabSignsIn(String cabId, int initialPos)
          {
 
+            this.cabID=cabId;
+            this.initialPos=initialPos;
          }
      }
 
      public static final class CabSignsOut implements Command{
+        final  String cabId;
          public CabSignsOut(String cabId){
-             
+             this.cabId=cabId;
          }
      }
 
      public static final class RequestRide implements Command{
-        ActorRef<RideService.RideResponse> replyTo;
+        final ActorRef<RideService.RideResponse> replyTo;
+        final String custId;
+        final int sourceLoc;
+        final  int destinationLoc;
         public RequestRide(String custId, int sourceLoc, int destinationLoc, ActorRef<RideService.RideResponse> replyTo){
-            
+            this.custId=custId;
+            this.sourceLoc=sourceLoc;
+            this.destinationLoc=destinationLoc;
+            this.replyTo=replyTo;
         }
     }
 
-    public static final class RideEnded implements Command{
-        public RideEnded(int cabId , int rideId)
-        {
-
-        }
-    }
+    
 
     public static final class Reset implements Command
     {
         public Reset()
         {
 
+
+        
         }
     } 
 
@@ -64,10 +81,18 @@ public class Ride extends AbstractBehavior<Ride.Command>
 
      public static final class RideResponse 
      {
+        final   int rideId ;
+        final   String cabId;
+        final  int fare;
+        final  ActorRef<FulfillRide.Command> fRide; 
 
          public  RideResponse(int rideId, String cabId, int fare, ActorRef<FulfillRide.Command> fRide)
          {
 
+            this.rideId=rideId;
+            this.cabId=cabId;
+            this.fare=fare;
+            this.fRide=fRide;
          }
      }
 
@@ -83,16 +108,9 @@ public class Ride extends AbstractBehavior<Ride.Command>
         );
     }
 
-    private Ride(ActorContext<Command> context, int id) {
+    private RideService(ActorContext<Command> context, HashMap<String , CabData> CabDataMap) {
         super(context);
-        this.cabId = id;
-        this.numRides = 0;
-        this.state = CabState.SIGNED_OUT;
-        this.rideId = -1;
-        this.location = 0;
-        this.sourceLoc = -1;
-        this.destinationLoc = -1;
-        this.custId=-1;
+       this.CabDataMap=CabDataMap;
     }
 
 
@@ -105,7 +123,6 @@ public class Ride extends AbstractBehavior<Ride.Command>
         ReceiveBuilder<Command> builder = newReceiveBuilder();
 
         builder.onMessage(RequestRide.class,   this::onRequestRide);
-        builder.onMessage(RideEnded.class,     this::onRideEnded);
         builder.onMessage(CabSignsIn.class,        this::onCabSignsIn);
         builder.onMessage(CabSignsOut.class,       this::onCabSignsOut);
         builder.onMessage(RideResponse.class,       this::onRideResponse);
@@ -118,19 +135,17 @@ public class Ride extends AbstractBehavior<Ride.Command>
     private Behavior<Command> onRequestRide(RequestRide message)
     {
 
-        return this;
-    }
+        message.replyTo.tell(new FulfillRide.RequestRide(this.custId,this.sourceLoc, this.destinationLoc,context.getself()));
 
-    private Behavior<Command> onRideEnded(RideEnded message)
-    {
-        
         return this;
     }
 
 
     private Behavior<Command> onCabSignsIn(CabSignsIn message)
     {
-  
+
+        CabDataMap.get(message.cabID).state=CabState.AVAILABLE;
+
         return this;
     }
 
@@ -138,6 +153,7 @@ public class Ride extends AbstractBehavior<Ride.Command>
     private Behavior<Command> onCabSignsOut(CabSignsOut message)
     {
   
+        CabDataMap.get(message.cabID).state=CabState.SIGNED_OUT;
         return this;
     }
 
@@ -145,11 +161,29 @@ public class Ride extends AbstractBehavior<Ride.Command>
     private Behavior<Command> onRideResponse(RideResponse message)
     {
 
+        CabDataMap.get(this.cabId).rideId=message.rideId;
+        CabDataMap.get(this.cabId).custId=this.custId;
+        CabDataMap.get(this.cabId).interested=;
         return this;
     }
 
     private Behavior<Command> onReset(Reset message)
     {
+
+        for(String i:CabDataMap.keySet())
+        {
+
+           CabDataMap.get(i).numRides = 0;
+           CabDataMap.get(i).state = CabState.SIGNED_OUT;
+           CabDataMap.get(i).rideId = -1;
+           CabDataMap.get(i).location = 0;
+           CabDataMap.get(i).interested=true;
+           CabDataMap.get(i).sourceLoc = -1;
+           CabDataMap.get(i).destinationLoc = -1;
+
+        }
+
+        
         return this;
     }
 

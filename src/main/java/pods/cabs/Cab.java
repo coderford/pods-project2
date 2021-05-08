@@ -6,7 +6,7 @@ import akka.actor.typed.javadsl.*;
 
 public class Cab extends AbstractBehavior<Cab.Command> {
 
-    private int id;
+    private String id;
     private int numRides;
     private CabState state;
 
@@ -105,7 +105,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     /*
      * INITIALIZATION
      */
-    public static Behavior<Command> create(int id) {
+    public static Behavior<Command> create(String id) {
         return Behaviors.setup(
 	        context -> {
                 return new Cab(context, id);
@@ -113,7 +113,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
         );
     }
 
-    private Cab(ActorContext<Command> context, int id) {
+    private Cab(ActorContext<Command> context, String id) {
         super(context);
         this.id = id;
         this.numRides = 0;
@@ -259,7 +259,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
         return this;
     }
 
-    private boolean sendSignInRequest(int id, int initialPos) {
+    private boolean sendSignInRequest(String id, int initialPos) {
         String signInURL = "http://ride-service:8081/cabSignsIn";
         String response = RequestSender.getHTTPResponse(
             signInURL, 
@@ -274,7 +274,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
         return true;
     }
 
-    private boolean sendSignOutRequest(int id) {
+    private boolean sendSignOutRequest(String id) {
         String signOutURL = "http://ride-service:8081/cabSignsOut";
         String response = RequestSender.getHTTPResponse(
             signOutURL, 
