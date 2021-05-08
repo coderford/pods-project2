@@ -79,7 +79,7 @@ public class RideService extends AbstractBehavior<Ride.Command>
      */
 
 
-     public static final class RideResponse 
+     public static final class RideResponse implements Command
      {
         final   int rideId ;
         final   String cabId;

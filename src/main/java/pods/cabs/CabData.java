@@ -1,7 +1,7 @@
 package pods.cabs;
 
 public class CabData {
-    public int id;
+    public String id;
     public int numRides;
     public CabState state;
 

@@ -71,8 +71,9 @@ public static final class ResponseBalance
      {
          if(this.balance-message.toDeduct <0)
          {
-             return -1;
+            message.replyTo.tell(new ResponseBalance(-1));
          }
+
          this.balance-=message.toDeduct;
          message.replyTo.tell(new ResponseBalance(this.balance));
          return this;
@@ -113,9 +114,10 @@ public static final class GetBalance implements Command{
 
 public static final class DeductBalance implements Command
 {
-   final ActorRef<Wallet.ResponseBalance> replyTo;
+    final ActorRef<Wallet.ResponseBalance> replyTo;
     final int toDeduct;
-    public void DeductBalance(int toDeduct, ActorRef<Wallet.ResponseBalance> replyTo)
+
+    public DeductBalance(int toDeduct, ActorRef<Wallet.ResponseBalance> replyTo)
     {
 
         this.toDeduct=toDeduct;
@@ -128,10 +130,8 @@ public static final class Reset implements Command
 {
     final ActorRef<Wallet.ResponseBalance> replyTo;
 
-    public void Reset(ActorRef<Wallet.ResponseBalance> replyTo)
+    public Reset(ActorRef<Wallet.ResponseBalance> replyTo)
     {
-       
-
         this.replyTo=replyTo;
     }
 
@@ -142,7 +142,7 @@ public static final class AddBalance implements Command
 {
  
     final int balance;
-    public void AddBalance(int toAdd)
+    public AddBalance(int toAdd)
     {
         this.balance=toAdd;
 
