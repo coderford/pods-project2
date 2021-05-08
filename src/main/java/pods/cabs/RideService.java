@@ -66,9 +66,9 @@ public class RideService extends AbstractBehavior<Ride.Command>
     {
         public Reset()
         {
-
-
         
+
+
         }
     } 
 
@@ -135,9 +135,9 @@ public class RideService extends AbstractBehavior<Ride.Command>
     private Behavior<Command> onRequestRide(RequestRide message)
     {
 
-        message.replyTo.tell(new FulfillRide.RequestRide(this.custId,this.sourceLoc, this.destinationLoc,context.getself()));
+        message.replyTo.tell(new FulfillRide.RequestRide(this.custId,this.sourceLoc, this.destinationLoc,context.self));
 
-        return this;
+        return this; 
     }
 
 
@@ -163,7 +163,8 @@ public class RideService extends AbstractBehavior<Ride.Command>
 
         CabDataMap.get(this.cabId).rideId=message.rideId;
         CabDataMap.get(this.cabId).custId=this.custId;
-        CabDataMap.get(this.cabId).interested=;
+        CabDataMap.get(this.cabId).sourceLoc=this.sourceLoc;
+        CabDataMap.get(this.cabId).destinationLoc=this.destinationLoc;
         return this;
     }
 
@@ -177,7 +178,6 @@ public class RideService extends AbstractBehavior<Ride.Command>
            CabDataMap.get(i).state = CabState.SIGNED_OUT;
            CabDataMap.get(i).rideId = -1;
            CabDataMap.get(i).location = 0;
-           CabDataMap.get(i).interested=true;
            CabDataMap.get(i).sourceLoc = -1;
            CabDataMap.get(i).destinationLoc = -1;
 
