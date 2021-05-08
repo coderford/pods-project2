@@ -7,7 +7,7 @@ import akka.actor.typed.ActorRef;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class Tests {
+public class TestMain {
 
 
     @ClassRule
@@ -32,7 +32,7 @@ public class Tests {
     for(Wallet i:Globals.cabs)
     {
         ActorRef<Wallet.Command> wallet = Globals.cabs.get(i);
-        
+
         wallet.tell(new Wallet.Reset());
     }
 
