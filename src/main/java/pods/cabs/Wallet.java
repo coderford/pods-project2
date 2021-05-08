@@ -55,6 +55,7 @@ public static final class ResponseBalance
          builder.onMessage(GetBalance.class,    this::onGetBalance);
          builder.onMessage(DeductBalance.class,    this::onDeductBalance);
          builder.onMessage(AddBalance.class,    this::onAddBalance);
+         builder.onMessage(ResponseBalance.class,    this::onResponseBalance);
          builder.onMessage(Reset.class,    this::onReset);
 
          return builder.build();
@@ -62,6 +63,12 @@ public static final class ResponseBalance
 
 
      private Behavior<Command> onGetBalance(GetBalance message)
+     {
+         message.replyTo.tell(new ResponseBalance(this.balance));
+         return this;
+     }
+
+     private Behavior<Command> onResponseBalance(ResponseBalance message)
      {
          message.replyTo.tell(new ResponseBalance(this.balance));
          return this;
