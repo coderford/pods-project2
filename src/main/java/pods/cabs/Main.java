@@ -1,7 +1,9 @@
 package pods.cabs;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -9,78 +11,66 @@ import akka.actor.typed.javadsl.*;
 
 public class Main {
 
-
-    private final ActorRef<Cab.Command> cab;
-    private final ActorRef<Wallet.Command> wallet;
-    HashMap<String,CabData> CabDataMap = new HashMap<>();
-
     public static Behavior<Void> create() {
-         return Behaviors.setup(
-	        context -> {
-                // Initialize other actors here
+        return Behaviors.setup(context -> {
+            /*
+             * Initialize CabData HashMap
+             */
+            ActorRef<Cab.Command> cab;
+            ActorRef<Wallet.Command> wallet;
+            HashMap<String, CabData> cabDataMap = new HashMap<>();
 
+            int initBalance = 0;
+            ArrayList<String> cabIds = new ArrayList<>();
+            ArrayList<Integer> walletIds = new ArrayList<>();
 
-                 /*
-    *   Initialize CabData HashMap
-    */
-      
-    ArrayList<String> cabIds=new ArrayList<>();
-    ArrayList<String> walletIds=new ArrayList<>();
-    
+            try {
+                File inputFile = new File("IDs.txt");
+                Scanner in = new Scanner(inputFile);
 
-    try {
-        File inputFile = new File("IDs.txt");
-        Scanner in = new Scanner(inputFile);
+                int section = 0;
+                while (in.hasNextLine()) {
+                    String line = in.nextLine();
+                    if (line.compareTo("****") == 0) {
+                        section++;
+                    } else if (section == 1) {
+                        cabIds.add(line);
+                    } else if (section == 2) {
+                        walletIds.add(Integer.parseInt(line));
+                    } else if (section == 3) {
+                        initBalance = Integer.parseInt(line);
+                    }
+                }
 
-        int section = 0;
-        while(in.hasNextLine()) {
-            String line = in.nextLine();
-            if(line.compareTo("****") == 0) {
-                section++;
+                in.close();
+            } catch (Exception e) {
+                System.out.println("ERROR: Could not read input file!");
             }
-            else if(section == 1) {
-                cabIds.add(line);
+
+            // Create Cab actors
+            for (String id : cabIds) {
+                cabDataMap.put(id, new CabData(id));
+
+                String name = "cab-actor-" + id;
+                cab = context.spawn(Cab.create(id), name);
+                Globals.cabs.put(id, cab);
             }
-            else if(section== 2)
-            {
-                walletIds.add(line);
+
+            // Create Wallet actors
+            for (int id : walletIds) {
+                String name = "wallet-actor-" + Integer.toString(id);
+                wallet = context.spawn(Wallet.create(id, initBalance), name);
+                Globals.wallets.put(id, wallet);
             }
-        }
 
-        in.close();
+            // Create 10 RideService actors
+            for (int i = 0; i < 1; i++) {
+                String name = "ride-actor-" + Integer.toString(i);
+                ActorRef<RideService.Command> tmpRide = context.spawn(RideService.create(cabDataMap), name);
+                Globals.rideServices.add(tmpRide);
+            }
+
+            return Behaviors.empty();
+        });
     }
-    catch(Exception e) {
-        System.out.println("ERROR: Could not read input file!");
-    }
-
-    for(String id : cabIds) {
-        CabDataMap.put(id,new CabData(id));
-
-     //#create cab-actors
-     cab= context.spawn(Cab.create(id));
-     //#create-actors
-
-     Globals.cabs.put(id,cab.self);
-    }
-
-    for(String id:walletIds)
-    {
-        //create wallet-actors
-        wallet=context.spawn(Wallet.create(id));
-        Globals.wallets.put(id,wallet.self);
-    }
-
-
-	            return Behaviors.empty();
-	        }
-         );
-    }
-
-
-
-   
-
-    
-
-
 }
