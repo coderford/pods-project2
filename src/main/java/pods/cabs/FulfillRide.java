@@ -191,6 +191,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
             // process this message only if currently waiting for cab response
 
             if(message.accepted) {
+                getContext().getLog().info("-- Cab " + requestedCabId + " accepted");
                 // If the request was accepted, move on to deducting from wallet
                 // get customer id and send a deduct request for his wallet
                 int custId = this.origMessage.custId;
@@ -211,11 +212,14 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 this.curState = FFState.DEDUCT_AMOUNT;
             }
             else {
+                getContext().getLog().info("-- Cab " + requestedCabId + " rejected...");
                 // cab did not accept; try and request another cab
+                this.curState = FFState.REQ_CABS;
                 if(requestCount < 3) requestNextCab();
 
                 // if no available cab was found, terminate
                 if(this.curState != FFState.WAIT_FOR_CAB) {
+                    getContext().getLog().info("No other ride was found!");
                     origMessage.replyTo.tell(new RideService.RideResponse(
                         -1,
                         "-1",
@@ -281,10 +285,12 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
 
     private void requestNextCab() {
         while(nextCabIndex < cabList.size()) {
+            getContext().getLog().info("-- nextCabIndex = " + nextCabIndex);
             CabData c = cabList.get(nextCabIndex);
             nextCabIndex++;
 
             if(c.state == CabState.AVAILABLE) {
+                getContext().getLog().info("Cab " + c.id + " is available");
                 requestCount++;
                 Globals.cabs.get(c.id).tell(new Cab.RequestRide(
                     nextRideId,

@@ -156,10 +156,13 @@ public class Cab extends AbstractBehavior<Cab.Command> {
         } else {
             interested = true;
             message.replyTo.tell(new FulfillRide.RequestRideResponse(false));
+            return this;
         }
 
-        if(sourceLoc < 0 || destinationLoc < 0)
+        if(message.sourceLoc < 0 || message.destinationLoc < 0) {
             message.replyTo.tell(new FulfillRide.RequestRideResponse(false));
+            return this;
+        }
 
         if(state == CabState.AVAILABLE) {
             this.fulfillActor = message.replyTo;

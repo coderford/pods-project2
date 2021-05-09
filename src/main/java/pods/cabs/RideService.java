@@ -150,7 +150,8 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onRideResponse(RideResponse message) {
-        cabDataMap.get(message.cabId).rideId = message.rideId;
+        if(!message.cabId.equals("-1"))
+            cabDataMap.get(message.cabId).rideId = message.rideId;
         message.probe.tell(message);
         return this;
     }
