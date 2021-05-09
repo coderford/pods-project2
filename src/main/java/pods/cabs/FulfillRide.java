@@ -156,12 +156,14 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 this.sourceLoc = sourceLoc;
             }
 
+            // Will use this custom comparator for sorting
             public int compare(CabData a, CabData b) {
                 return Math.abs(a.location - sourceLoc) - Math.abs(b.location - sourceLoc);
             }
             
         }
 
+        // create cab list
         this.cabList = cabDataMap.values()
                                  .stream()
                                  .sorted(new CabComparer(message.sourceLoc))
@@ -286,6 +288,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
     }
 
     private void requestNextCab() {
+        // This method goes through the cab list (while forwarding the nextCabIndex)
+        // and stops after sending request to next available cab
         while(nextCabIndex < cabList.size()) {
             getContext().getLog().info("-- nextCabIndex = " + nextCabIndex);
             CabData c = cabList.get(nextCabIndex);

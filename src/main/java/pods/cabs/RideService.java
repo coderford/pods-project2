@@ -138,10 +138,13 @@ public class RideService extends AbstractBehavior<RideService.Command> {
 
     private Behavior<Command> onRequestRide(RequestRide message) {
         getContext().getLog().info("-- RideService: received ride request for custtomer " + message.custId);
+        
+        // Spawn a new FulfillRide actor, with a unique name
         fulfillSpawnCount++;
         String name = this.toString() + "-ff" + fulfillSpawnCount;
         ActorRef<FulfillRide.Command> fulfillActor = getContext().spawn(FulfillRide.create(cabDataMap), name);
 
+        // Forward request to spawned FulfillRide
         fulfillActor.tell(new FulfillRide.FulfillRideRequest(
                 message.custId, 
                 message.sourceLoc, 
@@ -154,8 +157,10 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onCabSignsIn(CabSignsIn message) {
+        // Update cached cab state
         cabDataMap.get(message.cabId).state = CabState.AVAILABLE;
 
+        // Send update messages to all other ride services
         int timestamp = Globals.getUpdateTimestamp();
         for(int i = 0; i < Globals.rideService.size(); i++) {
             if(!Globals.rideService.get(i).equals(getContext().getSelf()))
@@ -173,8 +178,10 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onCabSignsOut(CabSignsOut message) {
+        // Update cached state
         cabDataMap.get(message.cabId).state = CabState.SIGNED_OUT;
 
+        // Send update messages to all other ride services
         int timestamp = Globals.getUpdateTimestamp();
         for(int i = 0; i < Globals.rideService.size(); i++) {
             if(!Globals.rideService.get(i).equals(getContext().getSelf()))
@@ -192,6 +199,7 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onRideResponse(RideResponse message) {
+        // Ride request was successful, update cache and send update messages to other ride services
         if(!message.cabId.equals("-1")) {
             cabDataMap.get(message.cabId).rideId = message.rideId;
             cabDataMap.get(message.cabId).state = CabState.GIVING_RIDE;
@@ -210,15 +218,18 @@ public class RideService extends AbstractBehavior<RideService.Command> {
             }
         }
 
+        // Send message to testProbe about the ride response
         message.probe.tell(message);
         return this;
     }
 
     private Behavior<Command> onRideEnded(RideEnded message) {
+        // Update cache
         cabDataMap.get(message.cabId).state = CabState.AVAILABLE;
         cabDataMap.get(message.cabId).rideId = -1;
         cabDataMap.get(message.cabId).location = message.newCabLocation;
 
+        // Send update messages to other ride service actors
         int timestamp = Globals.getUpdateTimestamp();
         for(int i = 0; i < Globals.rideService.size(); i++) {
             if(!Globals.rideService.get(i).equals(getContext().getSelf()))
@@ -235,6 +246,7 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onCabUpdate(CabUpdate message) {
+        // Update only if timestamp of update is more recent then currently stored timestamp
         if(message.timestamp > cabDataMap.get(message.cabId).timestamp)  {
             cabDataMap.put(message.cabId, message.cabData);
             cabDataMap.get(message.cabId).timestamp = message.timestamp;

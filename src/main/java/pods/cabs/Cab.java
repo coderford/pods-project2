@@ -20,8 +20,6 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
     public interface Command {}
 
-    public interface Response {}
-
     /*
      * COMMAND DEFINITIONS
      */
@@ -159,11 +157,13 @@ public class Cab extends AbstractBehavior<Cab.Command> {
             return this;
         }
 
+        // Source and destination location must not be negative
         if(message.sourceLoc < 0 || message.destinationLoc < 0) {
             message.replyTo.tell(new FulfillRide.RequestRideResponse(false));
             return this;
         }
 
+        // Accept ride only if current state is available
         if(state == CabState.AVAILABLE) {
             this.fulfillActor = message.replyTo;
             this.rideId = message.rideId;
@@ -181,8 +181,11 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     }
 
     private Behavior<Command> onRideStarted(RideStarted message) {
-        if(state != CabState.COMMITTED)
+        // Must be comitted to start ride
+        if(state != CabState.COMMITTED) {
             message.replyTo.tell(new FulfillRide.RideStartedResponse(false));
+            return this;
+        }
 
         state = CabState.GIVING_RIDE;
         location = sourceLoc;
@@ -194,8 +197,11 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     }
 
     private Behavior<Command> onRideCancelled(RideCancelled message) {
-        if(this.state != CabState.COMMITTED || this.rideId != message.rideId)
+        // Can cancel only if cab is committed and valid ride ID was sent
+        if(this.state != CabState.COMMITTED || this.rideId != message.rideId) {
             message.replyTo.tell(new FulfillRide.RideCancelledResponse(false));
+            return this;
+        }
 
         this.state = CabState.AVAILABLE;
         this.rideId = -1;
@@ -207,6 +213,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     }
 
     private Behavior<Command> onRideEnded(RideEnded message) {
+        // Can't end ride if not giving ride, or ride ID is invalid
         if(this.state != CabState.GIVING_RIDE || this.rideId != message.rideId)
             return this;
 
@@ -225,6 +232,7 @@ public class Cab extends AbstractBehavior<Cab.Command> {
     }
 
     private Behavior<Command> onSignIn(SignIn message) {
+        // Can sign-in only if signed-out and initial position is non-negative
         boolean signInAllowed = (state == CabState.SIGNED_OUT && message.initialPos >= 0);
 
         if(signInAllowed) {
@@ -273,6 +281,38 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
     private Behavior<Command> onReset(Reset message) {
         message.replyTo.tell(new NumRidesResponse(this.numRides));
+
+        // First, check if currently giving ride. If so, end ride.
+        if(this.state == CabState.GIVING_RIDE) {
+            this.state = CabState.AVAILABLE;
+            this.rideId = -1;
+            this.location = this.destinationLoc;
+            this.sourceLoc = -1;
+            this.destinationLoc = -1;
+
+            this.fulfillActor.tell(new FulfillRide.RideEndedByCab(
+                this.id,
+                this.rideId,
+                this.location
+            ));
+        }
+
+        // Then, check if signed-in, then sign-out
+        if(this.state == CabState.AVAILABLE) {
+            // update variables
+            state = CabState.SIGNED_OUT;
+            location = 0;
+            interested = true;
+            numRides = 0;
+
+            // send sign-out message to a random ride service instance
+            int randomIndex = (int) (Math.random() * Globals.rideService.size());
+            Globals.rideService.get(randomIndex).tell(new RideService.CabSignsOut(
+                this.id
+            ));
+        }
+
+        // As a final measure, reset all variables manually
         this.numRides = 0;
         this.state = CabState.SIGNED_OUT;
         this.rideId = -1;
