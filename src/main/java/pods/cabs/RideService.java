@@ -50,10 +50,16 @@ public class RideService extends AbstractBehavior<RideService.Command> {
         }
     }
 
-    public static final class Reset implements Command {
-        public Reset() {
+    public static final class RideEnded implements Command {
+        final String cabId;
 
+        public RideEnded(String cabId) {
+            this.cabId = cabId;
         }
+    }
+
+    public static final class Reset implements Command {
+
     }
 
     /*
@@ -93,7 +99,6 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     /*
      * MESSAGE HANDLING
      */
-
     @Override
     public Receive<Command> createReceive() {
         ReceiveBuilder<Command> builder = newReceiveBuilder();
@@ -102,6 +107,7 @@ public class RideService extends AbstractBehavior<RideService.Command> {
         builder.onMessage(CabSignsIn.class, this::onCabSignsIn);
         builder.onMessage(CabSignsOut.class, this::onCabSignsOut);
         builder.onMessage(RideResponse.class, this::onRideResponse);
+        builder.onMessage(RideEnded.class, this::onRideEnded);
         builder.onMessage(Reset.class, this::onReset);
 
         return builder.build();
@@ -126,7 +132,6 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onCabSignsOut(CabSignsOut message) {
-
         cabDataMap.get(message.cabId).state = CabState.SIGNED_OUT;
         return this;
     }
@@ -136,17 +141,21 @@ public class RideService extends AbstractBehavior<RideService.Command> {
         return this;
     }
 
+    private Behavior<Command> onRideEnded(RideEnded message) {
+        cabDataMap.get(message.cabId).state = CabState.AVAILABLE;
+        cabDataMap.get(message.cabId).rideId = -1;
+        return this;
+    }
+
     private Behavior<Command> onReset(Reset message) {
 
         for (String i : cabDataMap.keySet()) {
-
             cabDataMap.get(i).numRides = 0;
             cabDataMap.get(i).state = CabState.SIGNED_OUT;
             cabDataMap.get(i).rideId = -1;
             cabDataMap.get(i).location = 0;
             cabDataMap.get(i).sourceLoc = -1;
             cabDataMap.get(i).destinationLoc = -1;
-
         }
 
         return this;

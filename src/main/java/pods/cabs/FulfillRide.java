@@ -251,7 +251,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
     }
 
     private Behavior<Command> onRideEndedByCab(RideEndedByCab message) {
-
+        // tell parent
+        origMessage.replyTo.tell(new RideService.RideEnded(requestedCabId));
         return this;
     }
 
