@@ -10,7 +10,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import java.util.Random;
 
-//This test checks for consistency of wallet balance
+//This test checks if concurrent Riderequests are satisfied
+// cab 101,102,103 sign in then customers 201,202,203 request for ride concurrently
+//test PASS if all three get cab
+
+
 public class Test7 {
   @ClassRule
   public static final TestKitJunitResource testKit = new TestKitJunitResource();
@@ -43,8 +47,6 @@ public class Test7 {
 
          Random rand=new Random();
 
-
-        
         TestProbe<RideService.RideResponse> probe1 = testKit.createTestProbe();
         TestProbe<RideService.RideResponse> probe2 = testKit.createTestProbe();
         TestProbe<RideService.RideResponse> probe3 = testKit.createTestProbe();
@@ -81,7 +83,7 @@ class Demo extends Thread {
     threadprobe = probe;
     threadid = id;
     arr=array;
-    // System.out.println("Creating " + threadName );
+
   }
 
   public void run() {
@@ -97,7 +99,7 @@ class Demo extends Thread {
   }
 
   public void start() {
-    // System.out.println("Starting " + threadName );
+ 
     if (t == null) {
       t = new Thread(this, threadid);
       t.start();
