@@ -11,6 +11,7 @@ public class CabData {
     public int location;
     public int sourceLoc;
     public int destinationLoc;
+    public int timestamp;
 
     public CabData(String id) {
         this.id = id;
@@ -21,5 +22,6 @@ public class CabData {
         this.interested = true;
         this.sourceLoc = -1;
         this.destinationLoc = -1;
+        this.timestamp = 0;
     }
 }

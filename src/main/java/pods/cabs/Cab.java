@@ -215,7 +215,8 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
         this.fulfillActor.tell(new FulfillRide.RideEndedByCab(
             this.id,
-            this.rideId
+            this.rideId,
+            this.location
         ));
         return this;
     }

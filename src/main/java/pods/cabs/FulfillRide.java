@@ -62,10 +62,12 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
     public static final class RideEndedByCab implements Command {
         final String cabId;
         final int rideId;
+        final int newCabLocation;
 
-        public RideEndedByCab(String cabId, int rideId) {
+        public RideEndedByCab(String cabId, int rideId, int newCabLocation) {
             this.cabId = cabId;
             this.rideId = rideId;
+            this.newCabLocation = newCabLocation;
         }
     }
 
@@ -271,7 +273,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
 
     private Behavior<Command> onRideEndedByCab(RideEndedByCab message) {
         // tell parent
-        origMessage.replyTo.tell(new RideService.RideEnded(requestedCabId));
+        origMessage.replyTo.tell(new RideService.RideEnded(requestedCabId, message.newCabLocation));
         return this;
     }
 
