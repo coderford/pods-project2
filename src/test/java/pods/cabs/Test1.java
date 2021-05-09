@@ -3,9 +3,6 @@ package pods.cabs;
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
-import jdk.jfr.Timestamp;
-
-import com.typesafe.config.ConfigFactory;
 
 import java.util.Random;
 
@@ -55,7 +52,7 @@ public class Test1 {
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
 
-        rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
+        rideService.tell(new RideService.RequestRide("201", 10, 100, probe.getRef()));
         RideService.RideResponse resp = probe.receiveMessage();
         assert(resp.rideId != -1);
         System.out.println("RIDE FOR CUSTOMER 201 STARTED");

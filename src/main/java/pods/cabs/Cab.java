@@ -173,6 +173,9 @@ public class Cab extends AbstractBehavior<Cab.Command> {
 
             message.replyTo.tell(new FulfillRide.RequestRideResponse(true));
         }
+        else {
+            message.replyTo.tell(new FulfillRide.RequestRideResponse(false));
+        }
 
         return this;
     }

@@ -3,7 +3,6 @@ package pods.cabs;
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
-import com.typesafe.config.ConfigFactory;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -13,11 +12,7 @@ import java.util.Random;
 
 public class Test4 {
     @ClassRule
-    public static final TestKitJunitResource testKit = new TestKitJunitResource(ConfigFactory.parseString("akka {\n" +
-    "  loggers = [\"akka.event.slf4j.Slf4jLogger\"]\n" +
-    "  loglevel = \"DEBUG\"\n" +
-    "  logging-filter = \"akka.event.slf4j.Slf4jLoggingFilter\"\n" +
-    "}"));
+    public static final TestKitJunitResource testKit = new TestKitJunitResource();
 
     @Test
     public void test2() {
@@ -58,7 +53,7 @@ public class Test4 {
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
-        rideService.tell(new RideService.RequestRide(201, 10, -100, probe.getRef()));
+        rideService.tell(new RideService.RequestRide("201", 10, -100, probe.getRef()));
         RideService.RideResponse resp = probe.receiveMessage();
         assert(resp.rideId == -1);
 

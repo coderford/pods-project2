@@ -26,7 +26,7 @@ public class Main {
 
             int initBalance = 0;
             ArrayList<String> cabIds = new ArrayList<>();
-            ArrayList<Integer> walletIds = new ArrayList<>();
+            ArrayList<String> walletIds = new ArrayList<>();
 
             try {
                 File inputFile = new File("IDs.txt");
@@ -40,7 +40,7 @@ public class Main {
                     } else if (section == 1) {
                         cabIds.add(line);
                     } else if (section == 2) {
-                        walletIds.add(Integer.parseInt(line));
+                        walletIds.add(line);
                     } else if (section == 3) {
                         initBalance = Integer.parseInt(line);
                         Globals.initBalance=Integer.parseInt(line);
@@ -62,8 +62,8 @@ public class Main {
             }
 
             // Create Wallet actors
-            for (int id : walletIds) {
-                String name = "wallet-actor-" + Integer.toString(id);
+            for (String id : walletIds) {
+                String name = "wallet-actor-" + id;
                 wallet = context.spawn(Wallet.create(id, initBalance), name);
                 Globals.wallets.put(id, wallet);
             }

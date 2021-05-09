@@ -6,9 +6,9 @@ import java.util.HashMap;
 import akka.actor.typed.ActorRef;
 
 public class Globals {
-    public static HashMap<String, ActorRef<Cab.Command>> cabs = new HashMap<>();
-    public static HashMap<Integer, ActorRef<Wallet.Command>> wallets = new HashMap<>();
-    public static ArrayList<ActorRef<RideService.Command>> rideService = new ArrayList<>();
+    public static final HashMap<String, ActorRef<Cab.Command>> cabs = new HashMap<>();
+    public static final HashMap<String, ActorRef<Wallet.Command>> wallets = new HashMap<>();
+    public static final ArrayList<ActorRef<RideService.Command>> rideService = new ArrayList<>();
 
     public static int initBalance=0;
     public static int nextRideId = 0;

@@ -18,12 +18,12 @@ public class RideService extends AbstractBehavior<RideService.Command> {
      */
 
     public static final class CabSignsIn implements Command {
-        final String cabID;
+        final String cabId;
         final int initialPos;
 
         public CabSignsIn(String cabId, int initialPos) {
 
-            this.cabID = cabId;
+            this.cabId = cabId;
             this.initialPos = initialPos;
         }
     }
@@ -37,12 +37,12 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     public static final class RequestRide implements Command {
-        final int custId;
+        final String custId;
         final int sourceLoc;
         final int destinationLoc;
         final ActorRef<RideService.RideResponse> replyTo;
 
-        public RequestRide(int custId, int sourceLoc, int destinationLoc, ActorRef<RideService.RideResponse> replyTo) {
+        public RequestRide(String custId, int sourceLoc, int destinationLoc, ActorRef<RideService.RideResponse> replyTo) {
             this.custId = custId;
             this.sourceLoc = sourceLoc;
             this.destinationLoc = destinationLoc;
@@ -154,14 +154,40 @@ public class RideService extends AbstractBehavior<RideService.Command> {
     }
 
     private Behavior<Command> onCabSignsIn(CabSignsIn message) {
+        cabDataMap.get(message.cabId).state = CabState.AVAILABLE;
 
-        cabDataMap.get(message.cabID).state = CabState.AVAILABLE;
+        int timestamp = Globals.getUpdateTimestamp();
+        for(int i = 0; i < Globals.rideService.size(); i++) {
+            if(!Globals.rideService.get(i).equals(getContext().getSelf()))
+            Globals.rideService.get(i).tell(new RideService.CabUpdate(
+                message.cabId, 
+                this.cabDataMap.get(message.cabId), 
+                timestamp
+            ));
+            else {
+                getContext().getLog().info("Not sending sign-in update to ride service " + i);
+            }
+        }
 
         return this;
     }
 
     private Behavior<Command> onCabSignsOut(CabSignsOut message) {
         cabDataMap.get(message.cabId).state = CabState.SIGNED_OUT;
+
+        int timestamp = Globals.getUpdateTimestamp();
+        for(int i = 0; i < Globals.rideService.size(); i++) {
+            if(!Globals.rideService.get(i).equals(getContext().getSelf()))
+            Globals.rideService.get(i).tell(new RideService.CabUpdate(
+                message.cabId, 
+                this.cabDataMap.get(message.cabId), 
+                timestamp
+            ));
+            else {
+                getContext().getLog().info("Not sending sign-in update to ride service " + i);
+            }
+        }
+
         return this;
     }
 

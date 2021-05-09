@@ -3,7 +3,6 @@ package pods.cabs;
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
-import com.typesafe.config.ConfigFactory;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.ClassRule;
@@ -64,7 +63,7 @@ public class Test5 {
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
-        rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
+        rideService.tell(new RideService.RequestRide("201", 10, 100, probe.getRef()));
         RideService.RideResponse resp = probe.receiveMessage();
         assertTrue("Wrong cab assigned",resp.cabId.equals("101"));
         

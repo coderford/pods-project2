@@ -37,14 +37,14 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
      * COMMAND DEFINITIONS
      */
     public static final class FulfillRideRequest implements Command {
-        final int custId;
+        final String custId;
         final int sourceLoc;
         final int destinationLoc;
         final ActorRef<RideService.Command> replyTo;
         final ActorRef<RideService.RideResponse> probe;
 
         public FulfillRideRequest(
-            int custId, 
+            String custId, 
             int sourceLoc, 
             int destinationLoc,
             ActorRef<RideService.Command> replyTo,
@@ -182,7 +182,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 getContext().getSelf(),
                 origMessage.probe
             ));
-            return Behaviors.empty();
+            return Behaviors.stopped();
         }
 
         return this;
@@ -196,7 +196,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 getContext().getLog().info("-- Cab " + requestedCabId + " accepted");
                 // If the request was accepted, move on to deducting from wallet
                 // get customer id and send a deduct request for his wallet
-                int custId = this.origMessage.custId;
+                String custId = this.origMessage.custId;
                 int cabLoc = cabDataMap.get(requestedCabId).location;
                 int fare = 10*(Math.abs(cabLoc - origMessage.sourceLoc) + Math.abs(origMessage.sourceLoc - origMessage.destinationLoc));
                 this.fareCalculated = fare;
@@ -229,7 +229,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                         getContext().getSelf(),
                         origMessage.probe
                     ));
-                    return Behaviors.empty();
+                    return Behaviors.stopped();
                 }
             }
         }
@@ -250,7 +250,7 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 getContext().getSelf(),
                 origMessage.probe
             ));
-            return Behaviors.empty();
+            return Behaviors.stopped();
         }
 
         // deduction was successul; start ride, tell parent and wait for rideEnded from cab

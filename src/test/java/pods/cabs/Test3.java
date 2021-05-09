@@ -3,7 +3,6 @@ package pods.cabs;
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
-import com.typesafe.config.ConfigFactory;
 
 import java.util.Random;
 
@@ -64,13 +63,13 @@ public class Test3 {
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
-        rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
+        rideService.tell(new RideService.RequestRide("201", 10, 100, probe.getRef()));
         RideService.RideResponse resp1 = probe.receiveMessage();
         assert(resp1.rideId != -1);
         System.out.println("RIDE FOR CUSTOMER 201 STARTED");
 
         rideService = Globals.rideService.get(rand.nextInt(10));
-        rideService.tell(new RideService.RequestRide(202, 20, 100, probe.getRef()));
+        rideService.tell(new RideService.RequestRide("202", 20, 100, probe.getRef()));
         RideService.RideResponse resp2 = probe.receiveMessage();
         assert(resp2.rideId != -1);
         System.out.println("RIDE FOR CUSTOMER 202 STARTED"); 
