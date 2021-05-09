@@ -10,6 +10,7 @@ public class Globals {
     public static HashMap<Integer, ActorRef<Wallet.Command>> wallets = new HashMap<>();
     public static ArrayList<ActorRef<RideService.Command>> rideService = new ArrayList<>();
 
+    public static int initBalance=0;
     public static int nextRideId = 0;
     public static int updateTimeStamp = 0;
 
