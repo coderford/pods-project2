@@ -15,7 +15,10 @@ public class TestMain {
     public void testMainActor() {
         TestProbe<Main.Started> startedProbe = testKit.createTestProbe();
         ActorRef<Void> underTest = testKit.spawn(Main.create(startedProbe.getRef()), "Main");
-        startedProbe.expectMessage(new Main.Started(underTest));
+
+        startedProbe.expectMessageClass(Main.Started.class);
+
+        System.out.println("-- RECEIVED STARTED");
     
         TestProbe<Cab.NumRidesResponse> cabResetProbe = testKit.createTestProbe();
         Globals.cabs.values().forEach(
@@ -25,6 +28,8 @@ public class TestMain {
             }
         );
 
+        System.out.println("-- CABS RESET SUCCESSFUL");
+
         TestProbe<Wallet.ResponseBalance> walletTestProbe = testKit.createTestProbe();
         Globals.wallets.values().forEach(
             wallet -> {
@@ -32,6 +37,8 @@ public class TestMain {
                 walletTestProbe.expectMessageClass(Wallet.ResponseBalance.class);
             }
         );
+
+        System.out.println("-- WALLETS RESET SUCCESSFUL");
 
         ActorRef<Cab.Command> cab101 = Globals.cabs.get("101");
         cab101.tell(new Cab.SignIn(10));

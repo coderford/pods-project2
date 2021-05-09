@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.*;
+import pods.cabs.Cab.RideStarted;
 
 public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
     final HashMap<String, CabData> cabDataMap;
@@ -128,6 +129,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
         builder.onMessage(RequestRideResponse.class, this::onRequestRideResponse);
         builder.onMessage(WrappedResponseBalance.class, this::onWrappedResponseBalance);
         builder.onMessage(RideEndedByCab.class, this::onRideEndedByCab);
+        builder.onMessage(RideStartedResponse.class, this::onRideStartedResponse);
+        builder.onMessage(RideCancelledResponse.class, this::onRideCancelledResponse);
 
         return builder.build();
     }
@@ -253,6 +256,14 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
     private Behavior<Command> onRideEndedByCab(RideEndedByCab message) {
         // tell parent
         origMessage.replyTo.tell(new RideService.RideEnded(requestedCabId));
+        return this;
+    }
+
+    private Behavior<Command> onRideStartedResponse(RideStartedResponse message) {
+        return this;
+    }
+
+    private Behavior<Command> onRideCancelledResponse(RideCancelledResponse message) {
         return this;
     }
 

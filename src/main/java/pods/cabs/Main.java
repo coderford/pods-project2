@@ -12,11 +12,7 @@ import akka.actor.typed.javadsl.*;
 public class Main {
 
     public static class Started {
-        final ActorRef<Void> replyTo;
 
-        public Started(ActorRef<Void> replyTo) {
-            this.replyTo = replyTo;
-        }
     }
 
     public static Behavior<Void> create(ActorRef<Main.Started> testProbe) {
@@ -79,7 +75,7 @@ public class Main {
             }
 
             // Send a message to testprobe
-            testProbe.tell(new Started(context.getSelf()));
+            testProbe.tell(new Started());
             return Behaviors.empty();
         });
     }
