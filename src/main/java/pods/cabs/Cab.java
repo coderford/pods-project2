@@ -226,8 +226,8 @@ public class Cab extends AbstractBehavior<Cab.Command> {
             location = message.initialPos;
 
             // send sign-in message to a random ride service instance
-            int randomIndex = (int) (Math.random() * Globals.rideServices.size());
-            Globals.rideServices.get(randomIndex).tell(new RideService.CabSignsIn(
+            int randomIndex = (int) (Math.random() * Globals.rideService.size());
+            Globals.rideService.get(randomIndex).tell(new RideService.CabSignsIn(
                 this.id,
                 message.initialPos
             ));
@@ -250,8 +250,8 @@ public class Cab extends AbstractBehavior<Cab.Command> {
             numRides = 0;
 
             // send sign-out message to a random ride service instance
-            int randomIndex = (int) (Math.random() * Globals.rideServices.size());
-            Globals.rideServices.get(randomIndex).tell(new RideService.CabSignsOut(
+            int randomIndex = (int) (Math.random() * Globals.rideService.size());
+            Globals.rideService.get(randomIndex).tell(new RideService.CabSignsOut(
                 this.id
             ));
         }

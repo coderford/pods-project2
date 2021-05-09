@@ -138,6 +138,7 @@ public class RideService extends AbstractBehavior<RideService.Command> {
 
     private Behavior<Command> onRideResponse(RideResponse message) {
         cabDataMap.get(message.cabId).rideId = message.rideId;
+
         return this;
     }
 

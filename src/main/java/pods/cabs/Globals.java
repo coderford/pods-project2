@@ -2,14 +2,13 @@ package pods.cabs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import akka.actor.typed.ActorRef;
 
 public class Globals {
     public static HashMap<String, ActorRef<Cab.Command>> cabs = new HashMap<>();
     public static HashMap<Integer, ActorRef<Wallet.Command>> wallets = new HashMap<>();
-    public static List<ActorRef<RideService.Command>> rideServices = new ArrayList<>();
+    public static ArrayList<ActorRef<RideService.Command>> rideService = new ArrayList<>();
 
     public static int nextRideId = 0;
 

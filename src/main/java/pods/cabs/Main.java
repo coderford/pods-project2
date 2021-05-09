@@ -11,7 +11,15 @@ import akka.actor.typed.javadsl.*;
 
 public class Main {
 
-    public static Behavior<Void> create() {
+    public static class Started {
+        final ActorRef<Void> replyTo;
+
+        public Started(ActorRef<Void> replyTo) {
+            this.replyTo = replyTo;
+        }
+    }
+
+    public static Behavior<Void> create(ActorRef<Main.Started> testProbe) {
         return Behaviors.setup(context -> {
             /*
              * Initialize CabData HashMap
@@ -67,9 +75,11 @@ public class Main {
             for (int i = 0; i < 1; i++) {
                 String name = "ride-actor-" + Integer.toString(i);
                 ActorRef<RideService.Command> tmpRide = context.spawn(RideService.create(cabDataMap), name);
-                Globals.rideServices.add(tmpRide);
+                Globals.rideService.add(tmpRide);
             }
 
+            // Send a message to testprobe
+            testProbe.tell(new Started(context.getSelf()));
             return Behaviors.empty();
         });
     }
