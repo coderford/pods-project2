@@ -43,6 +43,7 @@ public class Main {
                         walletIds.add(Integer.parseInt(line));
                     } else if (section == 3) {
                         initBalance = Integer.parseInt(line);
+                        Globals.initBalance=Integer.parseInt(line);
                     }
                 }
 

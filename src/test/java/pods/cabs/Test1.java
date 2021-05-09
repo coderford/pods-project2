@@ -3,6 +3,9 @@ package pods.cabs;
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
+import jdk.jfr.Timestamp;
+
+import com.typesafe.config.ConfigFactory;
 
 import java.util.Random;
 
@@ -42,11 +45,11 @@ public class Test1 {
 
         System.out.println("-- WALLETS RESET SUCCESSFUL");
 
-        ActorRef<Cab.Command> cab101 = Globals.cabs.get("101");
-        cab101.tell(new Cab.SignIn(10));
+        ActorRef<Cab.Command> cab = Globals.cabs.get("101");
+        cab.tell(new Cab.SignIn(10));
         System.out.println("CAB 101 SIGNED IN");
-            Random rand=new Random();
-            
+         Random rand=new Random();
+
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
@@ -57,8 +60,9 @@ public class Test1 {
         assert(resp.rideId != -1);
         System.out.println("RIDE FOR CUSTOMER 201 STARTED");
 
-        cab101.tell(new Cab.RideEnded(resp.rideId));
-        System.out.println("---- TEST 1 SUCCESSFUL");
+        cab.tell(new Cab.RideEnded(resp.rideId));
+        System.out.println("---- TEST 1 PASSED \n \n \n \n \n");
+
 
 
        

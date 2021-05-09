@@ -4,24 +4,20 @@ import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
 import com.typesafe.config.ConfigFactory;
-
-import java.util.Random;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.ClassRule;
 import org.junit.Test;
+import java.util.*;
 
+//In this test we check if nearest cab is assigned or not
 
-//This Testcase checks whether 
-//multiple rides are assigned to multiple customers 
-//
-
-
-public class Test3 {
+public class Test5 {
     @ClassRule
     public static final TestKitJunitResource testKit = new TestKitJunitResource();
 
     @Test
-    public void test3() {
+    public void test() {
         TestProbe<Main.Started> startedProbe = testKit.createTestProbe();
         ActorRef<Void> underTest = testKit.spawn(Main.create(startedProbe.getRef()), "Main");
 
@@ -49,39 +45,32 @@ public class Test3 {
 
         System.out.println("-- WALLETS RESET SUCCESSFUL");
 
-
         Random rand=new Random();
 
-        ActorRef<Cab.Command> cab101 = Globals.cabs.get("101");
-        cab101.tell(new Cab.SignIn(10));
-        System.out.println("CAB 101 SIGNED In");
+        ActorRef<Cab.Command> cab = Globals.cabs.get("101");
+        cab.tell(new Cab.SignIn(20));
+        System.out.println("CAB 101 SIGNED IN AT LOCATION 20");
 
-        ActorRef<Cab.Command> cab102 = Globals.cabs.get("102");
-        cab102.tell(new Cab.SignIn(20));
-        System.out.println("CAB 102 SIGNED In");
+        cab = Globals.cabs.get("102");
+        cab.tell(new Cab.SignIn(30));
+        System.out.println("CAB 102 SIGNED IN AT LOCATION 30");
+
+        cab = Globals.cabs.get("103");
+        cab.tell(new Cab.SignIn(40));
+        System.out.println("CAB 103 SIGNED IN AT LOCATION 40");
+
 
         
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
         rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
-        RideService.RideResponse resp1 = probe.receiveMessage();
-        assert(resp1.rideId != -1);
-        System.out.println("RIDE FOR CUSTOMER 201 STARTED");
-
-        rideService = Globals.rideService.get(rand.nextInt(10));
-        rideService.tell(new RideService.RequestRide(202, 20, 100, probe.getRef()));
-        RideService.RideResponse resp2 = probe.receiveMessage();
-        assert(resp2.rideId != -1);
-        System.out.println("RIDE FOR CUSTOMER 202 STARTED"); 
+        RideService.RideResponse resp = probe.receiveMessage();
+        assertTrue("Wrong cab assigned",resp.cabId.equals("101"));
         
-        ActorRef<Cab.Command> cab = Globals.cabs.get(resp1.cabId);
-        cab.tell(new Cab.RideEnded(resp1.rideId));
+        System.out.println("RIDE FOR CUSTOMER 201 STARTED WITH CAB "+resp.cabId);
 
-        cab = Globals.cabs.get(resp2.cabId);
-        cab.tell(new Cab.RideEnded(resp2.rideId));
-
-        System.out.println("TEST 3  PASSED");
+        System.out.println("TEST 4 PASSED");
     }
 }
 
