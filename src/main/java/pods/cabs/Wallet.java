@@ -74,7 +74,7 @@ public class Wallet extends AbstractBehavior<Wallet.Command> {
     private Wallet(ActorContext<Command> context, String id, int balance) {
         super(context);
         this.id = id;
-        this.balance = 0;
+        this.balance = balance;
         this.initialBalance = balance;
     }
 

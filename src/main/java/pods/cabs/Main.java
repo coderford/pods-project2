@@ -51,7 +51,7 @@ public class Main {
             } catch (Exception e) {
                 System.out.println("ERROR: Could not read input file!");
             }
-
+            
             // Create Cab actors
             for (String id : cabIds) {
                 cabDataMap.put(id, new CabData(id));
