@@ -68,7 +68,7 @@ public class Main {
             }
 
             // Create 10 RideService actors
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 10; i++) {
                 String name = "ride-actor-" + Integer.toString(i);
                 ActorRef<RideService.Command> tmpRide = context.spawn(RideService.create(cabDataMap), name);
                 Globals.rideService.add(tmpRide);

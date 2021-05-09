@@ -4,6 +4,8 @@ import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
 
+import java.util.Random;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -42,16 +44,20 @@ public class Test1 {
 
         ActorRef<Cab.Command> cab101 = Globals.cabs.get("101");
         cab101.tell(new Cab.SignIn(10));
+        System.out.println("CAB 101 SIGNED IN");
+            Random rand=new Random();
+            
 
-        ActorRef<RideService.Command> rideService = Globals.rideService.get(0);
+        ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
-        rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
 
+
+        rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
         RideService.RideResponse resp = probe.receiveMessage();
         assert(resp.rideId != -1);
-        System.out.println("Ride for cab started");
+        System.out.println("RIDE FOR CUSTOMER 201 STARTED");
+
         cab101.tell(new Cab.RideEnded(resp.rideId));
-        
         System.out.println("---- TEST 1 SUCCESSFUL");
 
 

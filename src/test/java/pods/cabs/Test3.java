@@ -4,16 +4,23 @@ import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
 
-import org.junit.ClassRule;
-import org.junit.Test;
 import java.util.Random;
 
-public class Test2 {
+import org.junit.ClassRule;
+import org.junit.Test;
+
+
+//This Testcase checks whether 
+//multiple rides are assigned to multiple customers 
+//
+
+
+public class Test3 {
     @ClassRule
     public static final TestKitJunitResource testKit = new TestKitJunitResource();
 
     @Test
-    public void test2() {
+    public void test3() {
         TestProbe<Main.Started> startedProbe = testKit.createTestProbe();
         ActorRef<Void> underTest = testKit.spawn(Main.create(startedProbe.getRef()), "Main");
 
@@ -41,31 +48,39 @@ public class Test2 {
 
         System.out.println("-- WALLETS RESET SUCCESSFUL");
 
+
         Random rand=new Random();
 
         ActorRef<Cab.Command> cab101 = Globals.cabs.get("101");
         cab101.tell(new Cab.SignIn(10));
-        System.out.println("CAB 101 SIGNED IN");
+        System.out.println("CAB 101 SIGNED In");
+
+        ActorRef<Cab.Command> cab102 = Globals.cabs.get("102");
+        cab102.tell(new Cab.SignIn(20));
+        System.out.println("CAB 102 SIGNED In");
 
         
         TestProbe<RideService.RideResponse> probe = testKit.createTestProbe();
 
         ActorRef<RideService.Command> rideService = Globals.rideService.get(rand.nextInt(10));
         rideService.tell(new RideService.RequestRide(201, 10, 100, probe.getRef()));
-        RideService.RideResponse resp = probe.receiveMessage();
-        assert(resp.rideId != -1);
+        RideService.RideResponse resp1 = probe.receiveMessage();
+        assert(resp1.rideId != -1);
         System.out.println("RIDE FOR CUSTOMER 201 STARTED");
-
 
         rideService = Globals.rideService.get(rand.nextInt(10));
         rideService.tell(new RideService.RequestRide(202, 20, 100, probe.getRef()));
         RideService.RideResponse resp2 = probe.receiveMessage();
-        assert(resp2.rideId == -1);
-        System.out.println("RIDE REQUEST FOR CUSTOMER 202 FAILED");
+        assert(resp2.rideId != -1);
+        System.out.println("RIDE FOR CUSTOMER 202 STARTED"); 
+        
+        ActorRef<Cab.Command> cab = Globals.cabs.get(resp1.cabId);
+        cab.tell(new Cab.RideEnded(resp1.rideId));
 
+        cab = Globals.cabs.get(resp2.cabId);
+        cab.tell(new Cab.RideEnded(resp2.rideId));
 
-        cab101.tell(new Cab.RideEnded(resp.rideId));
-        System.out.println("TEST 2 PASSED");
+        System.out.println("TEST 3  PASSED");
     }
 }
 
