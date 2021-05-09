@@ -18,7 +18,7 @@ import java.util.Random;
 public class Test7 {
   @ClassRule
   public static final TestKitJunitResource testKit = new TestKitJunitResource();
-  public static final int arr[]=new int[4];
+
 
   @Test
   public void test() {
@@ -29,7 +29,6 @@ public class Test7 {
 
     System.out.println("-- RECEIVED STARTED");
 
-    for(int i=0;i<4;i++)arr[i]=0;
 
 
         ActorRef<Cab.Command> cab = Globals.cabs.get("101");
@@ -52,37 +51,30 @@ public class Test7 {
         TestProbe<RideService.RideResponse> probe3 = testKit.createTestProbe();
 
 
-        Demo R1 = new  Demo(probe1, "201",arr);
+        Demo R1 = new  Demo(probe1, "201");
     R1.start();
 
-    Demo R2 = new  Demo(probe2, "202",arr);
+    Demo R2 = new  Demo(probe2, "202");
     R2.start();
 
-    Demo R3 = new Demo(probe3, "203",arr);
+    Demo R3 = new Demo(probe3, "203");
     R3.start();
 
 
-    int count=0;
-    for(int i=0;i<4;i++)
-    {
-        if(arr[i]==1)count++;
-    }
-
-    if(count==3)System.out.println("TEST 7 PASSED");
     
   }
 }
 
 class Demo extends Thread {
   private Thread t;
-    private int arr[]=new int[4];
+  
   private String threadid;
   private TestProbe<RideService.RideResponse> threadprobe;
 
-  Demo(TestProbe<RideService.RideResponse> probe, String id,int [] array) {
+  Demo(TestProbe<RideService.RideResponse> probe, String id) {
     threadprobe = probe;
     threadid = id;
-    arr=array;
+  
 
   }
 
@@ -94,7 +86,7 @@ class Demo extends Thread {
         rideService.tell(new RideService.RequestRide(threadid, 10, 100, threadprobe.getRef()));
         RideService.RideResponse resp = threadprobe.receiveMessage();
         assert(resp.rideId != -1);
-        arr[Integer.parseInt(resp.cabId)%101]=1;
+    
         System.out.println("RIDE FOR CUSTOMER "+threadid+" STARTED WITH CAB "+resp.cabId);
   }
 

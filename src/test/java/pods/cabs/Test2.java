@@ -8,6 +8,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import java.util.Random;
 
+
+//cab 101 signs in , customers  201 requests for ride
+//then customer 202 requests for ride
+//test PASSED if customer 201 is assigned ride and customer 202 is rejected
+
 public class Test2 {
     @ClassRule
     public static final TestKitJunitResource testKit = new TestKitJunitResource();

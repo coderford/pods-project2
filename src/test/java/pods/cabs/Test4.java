@@ -9,6 +9,9 @@ import org.junit.Test;
 import java.util.Random;
 
 //#This test checks whether ride cancellation works correctly
+//cab 101 signs in , customers requests for ride 
+//fair is more than balance
+//test PASS if ride is cancelled
 
 public class Test4 {
     @ClassRule

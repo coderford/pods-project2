@@ -10,6 +10,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 //This test checks for consistency of wallet balance
+//for customer 201 equal balance is added and deducted concurrently multiple times 
+//test PASSED if final balance is consistent
 public class Test6 {
   @ClassRule
   public static final TestKitJunitResource testKit = new TestKitJunitResource();
@@ -61,7 +63,7 @@ class ThreadDemo extends Thread {
   ThreadDemo(TestProbe<Wallet.ResponseBalance> probe, int id) {
     threadprobe = probe;
     threadid = id;
-    // System.out.println("Creating " + threadName );
+
   }
 
   public void run() {
@@ -81,7 +83,7 @@ class ThreadDemo extends Thread {
   }
 
   public void start() {
-    // System.out.println("Starting " + threadName );
+ 
     if (t == null) {
       t = new Thread(this, Integer.toString(threadid));
       t.start();

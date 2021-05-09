@@ -12,7 +12,8 @@ import org.junit.Test;
 
 //This Testcase checks whether 
 //multiple rides are assigned to multiple customers 
-//
+//cab 101,102 sign in , customer 201 requests ride then customer 202 requests ride 
+//test PASS if both rides are assigned
 
 
 public class Test3 {

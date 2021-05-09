@@ -69,7 +69,7 @@ public class Test5 {
         
         System.out.println("RIDE FOR CUSTOMER 201 STARTED WITH CAB "+resp.cabId);
 
-        System.out.println("TEST 4 PASSED");
+        System.out.println("TEST 5 PASSED");
     }
 }
 
