@@ -71,13 +71,21 @@ public class RideService extends AbstractBehavior<RideService.Command> {
         final String cabId;
         final int fare;
         final ActorRef<FulfillRide.Command> fRide;
+        final ActorRef<RideService.RideResponse> probe;
 
-        public RideResponse(int rideId, String cabId, int fare, ActorRef<FulfillRide.Command> fRide) {
+        public RideResponse(
+            int rideId, 
+            String cabId, 
+            int fare, 
+            ActorRef<FulfillRide.Command> fRide,
+            ActorRef<RideService.RideResponse> probe
+        ) {
 
             this.rideId = rideId;
             this.cabId = cabId;
             this.fare = fare;
             this.fRide = fRide;
+            this.probe = probe;
         }
     }
 
@@ -118,8 +126,13 @@ public class RideService extends AbstractBehavior<RideService.Command> {
         String name = this.toString() + "-ff" + fulfillSpawnCount;
         ActorRef<FulfillRide.Command> fulfillActor = getContext().spawn(FulfillRide.create(cabDataMap), name);
 
-        fulfillActor.tell(new FulfillRide.FulfillRideRequest(message.custId, message.sourceLoc, message.destinationLoc,
-                getContext().getSelf()));
+        fulfillActor.tell(new FulfillRide.FulfillRideRequest(
+                message.custId, 
+                message.sourceLoc, 
+                message.destinationLoc,
+                getContext().getSelf(),
+                message.replyTo
+        ));
 
         return this;
     }
@@ -138,7 +151,7 @@ public class RideService extends AbstractBehavior<RideService.Command> {
 
     private Behavior<Command> onRideResponse(RideResponse message) {
         cabDataMap.get(message.cabId).rideId = message.rideId;
-
+        message.probe.tell(message);
         return this;
     }
 

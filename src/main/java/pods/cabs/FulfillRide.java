@@ -41,13 +41,21 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
         final int sourceLoc;
         final int destinationLoc;
         final ActorRef<RideService.Command> replyTo;
+        final ActorRef<RideService.RideResponse> probe;
 
-        public FulfillRideRequest(int custId, int sourceLoc, int destinationLoc,
-                           ActorRef<RideService.Command> replyTo) {
+        public FulfillRideRequest(
+            int custId, 
+            int sourceLoc, 
+            int destinationLoc,
+            ActorRef<RideService.Command> replyTo,
+            ActorRef<RideService.RideResponse> probe
+        )
+        {
             this.custId = custId;
             this.sourceLoc = sourceLoc;
             this.destinationLoc = destinationLoc;
             this.replyTo = replyTo;
+            this.probe = probe;
         }
     }
 
@@ -169,7 +177,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 -1,
                 "-1",
                 0,
-                getContext().getSelf()
+                getContext().getSelf(),
+                origMessage.probe
             ));
             return Behaviors.empty();
         }
@@ -211,7 +220,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                         -1,
                         "-1",
                         0,
-                        getContext().getSelf()
+                        getContext().getSelf(),
+                        origMessage.probe
                     ));
                     return Behaviors.empty();
                 }
@@ -231,7 +241,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
                 -1,
                 "-1",
                 0,
-                getContext().getSelf()
+                getContext().getSelf(),
+                origMessage.probe
             ));
             return Behaviors.empty();
         }
@@ -246,7 +257,8 @@ public class FulfillRide extends AbstractBehavior<FulfillRide.Command> {
             nextRideId,
             requestedCabId,
             fareCalculated,
-            getContext().getSelf()
+            getContext().getSelf(),
+            origMessage.probe
         ));
 
         this.curState = FFState.WAIT_FOR_RIDE_END;
